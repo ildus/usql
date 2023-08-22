@@ -2,16 +2,22 @@
 // Requires CGO. Uses platform's Ingres libraries.
 //
 // See: https://github.com/ildus/ingres
-// Group: all
+// Group: base
 package ingres
 
 import (
 	_ "github.com/ildus/ingres" // DRIVER
 	"github.com/xo/usql/drivers"
+	md "github.com/xo/usql/drivers/metadata"
+
+	"io"
 )
 
 func init() {
 	drivers.Register("ingres", drivers.Driver{
-		NewMetadataReader: NewMetadataReader,
+		NewMetadataReader: NewIngresReader,
+		NewMetadataWriter: func(db drivers.DB, w io.Writer, opts ...md.ReaderOption) md.Writer {
+			return NewIngresWriter(NewIngresReader(db, opts...))(db, w)
+		},
 	})
 }

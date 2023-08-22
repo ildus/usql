@@ -19,7 +19,7 @@ import (
 
 	dt "github.com/ory/dockertest/v3"
 	dc "github.com/ory/dockertest/v3/docker"
-	"github.com/xo/dburl"
+	"github.com/xo/usql/dburl"
 	"github.com/xo/usql/drivers"
 	"github.com/xo/usql/drivers/metadata"
 	_ "github.com/xo/usql/internal"

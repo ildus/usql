@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xo/dburl"
+	"github.com/xo/usql/dburl"
 	"github.com/xo/usql/drivers"
 	"github.com/xo/usql/drivers/metadata"
 	"github.com/xo/usql/env"

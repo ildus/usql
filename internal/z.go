@@ -3,7 +3,7 @@ package internal
 import (
 	"runtime"
 
-	"github.com/xo/dburl"
+	"github.com/xo/usql/dburl"
 	"github.com/xo/usql/drivers"
 )
 

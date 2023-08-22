@@ -214,6 +214,7 @@ associated database, scheme / build tag, and scheme aliases:
 <!-- DRIVER DETAILS START -->
 | Database                           | Scheme / Tag    | Scheme Aliases                                  | Driver Package / Notes                                                      |
 |------------------------------------|-----------------|-------------------------------------------------|-----------------------------------------------------------------------------|
+| Ingres (Actian X, Vector, VectorH) | `ingres`        | `in`, `vector`, `actianx`                       | [github.com/ildus/ingres][d-ingres] <sup>[†][f-cgo]</sup>                   |
 | PostgreSQL                         | `postgres`      | `pg`, `pgsql`, `postgresql`                     | [github.com/lib/pq][d-postgres]                                             |
 | MySQL                              | `mysql`         | `my`, `maria`, `aurora`, `mariadb`, `percona`   | [github.com/go-sql-driver/mysql][d-mysql]                                   |
 | Microsoft SQL Server               | `sqlserver`     | `ms`, `mssql`, `azuresql`                       | [github.com/microsoft/go-mssqldb][d-sqlserver]                              |
@@ -252,7 +253,6 @@ associated database, scheme / build tag, and scheme aliases:
 | VoltDB                             | `voltdb`        | `vo`, `vdb`, `volt`                             | [github.com/VoltDB/voltdb-client-go/voltdbclient][d-voltdb]                 |
 |                                    |                 |                                                 |                                                                             |
 | GO DRiver for ORacle               | `godror`        | `gr`                                            | [github.com/godror/godror][d-godror] <sup>[†][f-cgo]</sup>                  |
-| Ingres (Actian X, Vector, VectorH) | `ingres`        | `in`, `vector`, `actianx`                       | [github.com/ildus/ingres][d-ingres] <sup>[†][f-cgo]</sup>                   |
 | ODBC                               | `odbc`          | `od`                                            | [github.com/alexbrainman/odbc][d-odbc] <sup>[†][f-cgo]</sup>                |
 |                                    |                 |                                                 |                                                                             |
 | Amazon Redshift                    | `postgres`      | `rs`, `redshift`                                | [github.com/lib/pq][d-postgres] <sup>[‡][f-wire]</sup>                      |

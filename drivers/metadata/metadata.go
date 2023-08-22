@@ -3,7 +3,7 @@ package metadata
 import (
 	"strings"
 
-	"github.com/xo/dburl"
+	"github.com/xo/usql/dburl"
 	"github.com/xo/usql/text"
 )
 

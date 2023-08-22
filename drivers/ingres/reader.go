@@ -14,7 +14,7 @@ type MetadataReader struct {
 }
 
 // NewMetadataReader creates the metadata reader for clickhouse databases.
-func NewMetadataReader(db drivers.DB, opts ...metadata.ReaderOption) metadata.Reader {
+func NewIngresReader(db drivers.DB, opts ...metadata.ReaderOption) metadata.Reader {
 	return &MetadataReader{
 		LoggingReader: metadata.NewLoggingReader(db, opts...),
 	}

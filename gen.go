@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"github.com/mattn/go-runewidth"
-	"github.com/xo/dburl"
+	"github.com/xo/usql/dburl"
 	"github.com/yookoala/realpath"
 )
 
@@ -106,7 +106,7 @@ func run(licenseStart int, licenseAuthor string, dburlGen bool, dburlDir string,
 }
 
 func getDburlDir() string {
-	dir := filepath.Join(os.Getenv("GOPATH"), "src/github.com/xo/dburl")
+	dir := filepath.Join(os.Getenv("GOPATH"), "src/github.com/xo/usql/dburl")
 	var err error
 	if dir, err = realpath.Realpath(dir); err != nil {
 		panic(err)

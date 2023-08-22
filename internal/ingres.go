@@ -1,4 +1,4 @@
-//go:build (all || ingres) && !no_ingres
+//go:build (!no_base || ingres) && !no_ingres
 
 package internal
 

@@ -15,7 +15,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/xo/dburl/passfile"
+	"github.com/xo/usql/dburl/passfile"
 	"github.com/xo/usql/text"
 )
 

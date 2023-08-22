@@ -51,7 +51,6 @@ require (
 	github.com/trinodb/trino-go-client v0.312.0
 	github.com/uber/athenadriver v1.1.14
 	github.com/vertica/vertica-sql-go v1.3.3
-	github.com/xo/dburl v0.14.2
 	github.com/xo/tblfmt v0.10.3
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e
 	github.com/yookoala/realpath v1.0.0
@@ -290,3 +289,5 @@ require (
 	modernc.org/token v1.1.0 // indirect
 	modernc.org/zappy v1.0.9 // indirect
 )
+
+replace github.com/ildus/ingres => /src/go/src/github.com/ildus/ingres

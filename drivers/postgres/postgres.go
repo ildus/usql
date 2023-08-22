@@ -16,7 +16,7 @@ import (
 	"strings"
 
 	"github.com/lib/pq" // DRIVER
-	"github.com/xo/dburl"
+	"github.com/xo/usql/dburl"
 	"github.com/xo/usql/drivers"
 	"github.com/xo/usql/drivers/metadata"
 	pgmeta "github.com/xo/usql/drivers/metadata/postgres"

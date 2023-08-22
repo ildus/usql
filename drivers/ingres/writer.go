@@ -1,35 +1,21 @@
-package metadata
+package ingres
 
 import (
-	"context"
-	"database/sql"
 	"fmt"
+	md "github.com/xo/usql/drivers/metadata"
 	"io"
 	"strings"
 
-	"github.com/xo/usql/dburl"
 	"github.com/xo/tblfmt"
+	"github.com/xo/usql/dburl"
 	"github.com/xo/usql/env"
 	"github.com/xo/usql/text"
 )
 
-// DB is the common interface for database operations, compatible with
-// database/sql.DB and database/sql.Tx.
-type DB interface {
-	Exec(string, ...interface{}) (sql.Result, error)
-	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
-	Query(string, ...interface{}) (*sql.Rows, error)
-	QueryContext(context.Context, string, ...interface{}) (*sql.Rows, error)
-	QueryRow(string, ...interface{}) *sql.Row
-	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
-	Prepare(string) (*sql.Stmt, error)
-	PrepareContext(context.Context, string) (*sql.Stmt, error)
-}
-
-// DefaultWriter using an existing db introspector
-type DefaultWriter struct {
-	r             Reader
-	db            DB
+// IngresWriter using an existing db introspector
+type IngresWriter struct {
+	r             md.Reader
+	db            md.DB
 	w             io.Writer
 	tableTypes    map[rune][]string
 	funcTypes     map[rune][]string
@@ -39,19 +25,18 @@ type DefaultWriter struct {
 	listAllDbs func(string, bool) error
 }
 
-func NewDefaultWriter(r Reader, opts ...WriterOption) func(db DB, w io.Writer) Writer {
-	defaultWriter := &DefaultWriter{
+func NewIngresWriter(r md.Reader, opts ...WriterOption) func(db md.DB, w io.Writer) md.Writer {
+	defaultWriter := &IngresWriter{
 		r: r,
 		tableTypes: map[rune][]string{
 			't': {"TABLE", "BASE TABLE", "SYSTEM TABLE", "SYNONYM", "LOCAL TEMPORARY", "GLOBAL TEMPORARY"},
 			'v': {"VIEW", "SYSTEM VIEW"},
-			'm': {"MATERIALIZED VIEW"},
 			's': {"SEQUENCE"},
 		},
 		funcTypes: map[rune][]string{
 			'a': {"AGGREGATE"},
 			'n': {"FUNCTION"},
-			'p': {"PROCEDURE", "PACKAGE"},
+			'p': {"PROCEDURE"},
 			't': {"TRIGGER"},
 			'w': {"WINDOW"},
 		},
@@ -62,19 +47,19 @@ func NewDefaultWriter(r Reader, opts ...WriterOption) func(db DB, w io.Writer) W
 	for _, o := range opts {
 		o(defaultWriter)
 	}
-	return func(db DB, w io.Writer) Writer {
+	return func(db md.DB, w io.Writer) md.Writer {
 		defaultWriter.db = db
 		defaultWriter.w = w
 		return defaultWriter
 	}
 }
 
-// WriterOption to configure the DefaultWriter
-type WriterOption func(*DefaultWriter)
+// WriterOption to configure the IngresWriter
+type WriterOption func(*IngresWriter)
 
 // WithSystemSchemas that are ignored unless showSystem is true
 func WithSystemSchemas(schemas []string) WriterOption {
-	return func(w *DefaultWriter) {
+	return func(w *IngresWriter) {
 		w.systemSchemas = make(map[string]struct{}, len(schemas))
 		for _, s := range schemas {
 			w.systemSchemas[s] = struct{}{}
@@ -84,14 +69,14 @@ func WithSystemSchemas(schemas []string) WriterOption {
 
 // WithListAllDbs that lists all catalogs
 func WithListAllDbs(f func(string, bool) error) WriterOption {
-	return func(w *DefaultWriter) {
+	return func(w *IngresWriter) {
 		w.listAllDbs = f
 	}
 }
 
 // DescribeFunctions matching pattern
-func (w DefaultWriter) DescribeFunctions(u *dburl.URL, funcTypes, pattern string, verbose, showSystem bool) error {
-	r, ok := w.r.(FunctionReader)
+func (w IngresWriter) DescribeFunctions(u *dburl.URL, funcTypes, pattern string, verbose, showSystem bool) error {
+	r, ok := w.r.(md.FunctionReader)
 	if !ok {
 		return fmt.Errorf(text.NotSupportedByDriver, `\df`, u.Driver)
 	}
@@ -105,7 +90,7 @@ func (w DefaultWriter) DescribeFunctions(u *dburl.URL, funcTypes, pattern string
 	if err != nil {
 		return fmt.Errorf("failed to parse search pattern: %w", err)
 	}
-	res, err := r.Functions(Filter{Schema: sp, Name: tp, Types: types, WithSystem: showSystem})
+	res, err := r.Functions(md.Filter{Schema: sp, Name: tp, Types: types, WithSystem: showSystem})
 	if err != nil {
 		return fmt.Errorf("failed to list functions: %w", err)
 	}
@@ -113,13 +98,13 @@ func (w DefaultWriter) DescribeFunctions(u *dburl.URL, funcTypes, pattern string
 
 	if !showSystem {
 		// in case the reader doesn't implement WithSystem
-		res.SetFilter(func(r Result) bool {
-			_, ok := w.systemSchemas[r.(*Function).Schema]
+		res.SetFilter(func(r md.Result) bool {
+			_, ok := w.systemSchemas[r.(*md.Function).Schema]
 			return !ok
 		})
 	}
 
-	if _, ok := w.r.(FunctionColumnReader); ok {
+	if _, ok := w.r.(md.FunctionColumnReader); ok {
 		for res.Next() {
 			f := res.Get()
 			f.ArgTypes, err = w.getFunctionColumns(f.Catalog, f.Schema, f.SpecificName)
@@ -135,8 +120,8 @@ func (w DefaultWriter) DescribeFunctions(u *dburl.URL, funcTypes, pattern string
 		columns = append(columns, "Volatility", "Security", "Language", "Source code")
 	}
 	res.SetColumns(columns)
-	res.SetScanValues(func(r Result) []interface{} {
-		f := r.(*Function)
+	res.SetScanValues(func(r md.Result) []interface{} {
+		f := r.(*md.Function)
 		v := []interface{}{f.Schema, f.Name, f.ResultType, f.ArgTypes, f.Type}
 		if verbose {
 			v = append(v, f.Volatility, f.Security, f.Language, f.Source)
@@ -148,9 +133,9 @@ func (w DefaultWriter) DescribeFunctions(u *dburl.URL, funcTypes, pattern string
 	return tblfmt.EncodeAll(w.w, res, params)
 }
 
-func (w DefaultWriter) getFunctionColumns(c, s, f string) (string, error) {
-	r := w.r.(FunctionColumnReader)
-	cols, err := r.FunctionColumns(Filter{Catalog: c, Schema: s, Parent: f})
+func (w IngresWriter) getFunctionColumns(c, s, f string) (string, error) {
+	r := w.r.(md.FunctionColumnReader)
+	cols, err := r.FunctionColumns(md.Filter{Catalog: c, Schema: s, Parent: f})
 	if err != nil {
 		return "", err
 	}
@@ -175,7 +160,7 @@ func (w DefaultWriter) getFunctionColumns(c, s, f string) (string, error) {
 }
 
 // DescribeTableDetails matching pattern
-func (w DefaultWriter) DescribeTableDetails(u *dburl.URL, pattern string, verbose, showSystem bool) error {
+func (w IngresWriter) DescribeTableDetails(u *dburl.URL, pattern string, verbose, showSystem bool) error {
 	sp, tp, err := parsePattern(pattern)
 	if err != nil {
 		return fmt.Errorf("failed to parse search pattern: %w", err)
@@ -183,18 +168,18 @@ func (w DefaultWriter) DescribeTableDetails(u *dburl.URL, pattern string, verbos
 
 	found := 0
 
-	tr, isTR := w.r.(TableReader)
-	_, isCR := w.r.(ColumnReader)
+	tr, isTR := w.r.(md.TableReader)
+	_, isCR := w.r.(md.ColumnReader)
 	if isTR && isCR {
-		res, err := tr.Tables(Filter{Schema: sp, Name: tp, WithSystem: showSystem})
+		res, err := tr.Tables(md.Filter{Schema: sp, Name: tp, WithSystem: showSystem})
 		if err != nil {
 			return fmt.Errorf("failed to list tables: %w", err)
 		}
 		defer res.Close()
 		if !showSystem {
 			// in case the reader doesn't implement WithSystem
-			res.SetFilter(func(r Result) bool {
-				_, ok := w.systemSchemas[r.(*Table).Schema]
+			res.SetFilter(func(r md.Result) bool {
+				_, ok := w.systemSchemas[r.(*md.Table).Schema]
 				return !ok
 			})
 		}
@@ -208,7 +193,7 @@ func (w DefaultWriter) DescribeTableDetails(u *dburl.URL, pattern string, verbos
 		}
 	}
 
-	if _, ok := w.r.(SequenceReader); ok {
+	if _, ok := w.r.(md.SequenceReader); ok {
 		foundSeq, err := w.describeSequences(sp, tp, verbose, showSystem)
 		if err != nil {
 			return fmt.Errorf("failed to describe sequences: %w", err)
@@ -216,10 +201,10 @@ func (w DefaultWriter) DescribeTableDetails(u *dburl.URL, pattern string, verbos
 		found += foundSeq
 	}
 
-	ir, isIR := w.r.(IndexReader)
-	_, isICR := w.r.(IndexColumnReader)
+	ir, isIR := w.r.(md.IndexReader)
+	_, isICR := w.r.(md.IndexColumnReader)
 	if isIR && isICR {
-		res, err := ir.Indexes(Filter{Schema: sp, Name: tp, WithSystem: showSystem})
+		res, err := ir.Indexes(md.Filter{Schema: sp, Name: tp, WithSystem: showSystem})
 		if err != nil && err != text.ErrNotSupported {
 			return fmt.Errorf("failed to list indexes for table %s: %w", tp, err)
 		}
@@ -227,8 +212,8 @@ func (w DefaultWriter) DescribeTableDetails(u *dburl.URL, pattern string, verbos
 			defer res.Close()
 			if !showSystem {
 				// in case the reader doesn't implement WithSystem
-				res.SetFilter(func(r Result) bool {
-					_, ok := w.systemSchemas[r.(*Index).Schema]
+				res.SetFilter(func(r md.Result) bool {
+					_, ok := w.systemSchemas[r.(*md.Index).Schema]
 					return !ok
 				})
 			}
@@ -250,9 +235,9 @@ func (w DefaultWriter) DescribeTableDetails(u *dburl.URL, pattern string, verbos
 	return nil
 }
 
-func (w DefaultWriter) describeTableDetails(typ, sp, tp string, verbose, showSystem bool) error {
-	r := w.r.(ColumnReader)
-	res, err := r.Columns(Filter{Schema: sp, Parent: tp, WithSystem: showSystem})
+func (w IngresWriter) describeTableDetails(typ, sp, tp string, verbose, showSystem bool) error {
+	r := w.r.(md.ColumnReader)
+	res, err := r.Columns(md.Filter{Schema: sp, Parent: tp, WithSystem: showSystem})
 	if err != nil {
 		return fmt.Errorf("failed to list columns for table %s: %w", tp, err)
 	}
@@ -263,8 +248,8 @@ func (w DefaultWriter) describeTableDetails(typ, sp, tp string, verbose, showSys
 		columns = append(columns, "Size", "Decimal Digits", "Radix", "Octet Length")
 	}
 	res.SetColumns(columns)
-	res.SetScanValues(func(r Result) []interface{} {
-		f := r.(*Column)
+	res.SetScanValues(func(r md.Result) []interface{} {
+		f := r.(*md.Column)
 		v := []interface{}{f.Name, f.DataType, f.IsNullable, f.Default}
 		if verbose {
 			v = append(v, f.ColumnSize, f.DecimalDigits, f.NumPrecRadix, f.CharOctetLength)
@@ -276,7 +261,7 @@ func (w DefaultWriter) describeTableDetails(typ, sp, tp string, verbose, showSys
 	return w.encodeWithSummary(res, params, w.tableDetailsSummary(sp, tp))
 }
 
-func (w DefaultWriter) encodeWithSummary(res tblfmt.ResultSet, params map[string]string, summary func(io.Writer, int) (int, error)) error {
+func (w IngresWriter) encodeWithSummary(res tblfmt.ResultSet, params map[string]string, summary func(io.Writer, int) (int, error)) error {
 	newEnc, opts := tblfmt.FromMap(params)
 	opts = append(opts, tblfmt.WithSummary(
 		map[int]func(io.Writer, int) (int, error){
@@ -290,7 +275,7 @@ func (w DefaultWriter) encodeWithSummary(res tblfmt.ResultSet, params map[string
 	return enc.EncodeAll(w.w)
 }
 
-func (w DefaultWriter) tableDetailsSummary(sp, tp string) func(io.Writer, int) (int, error) {
+func (w IngresWriter) tableDetailsSummary(sp, tp string) func(io.Writer, int) (int, error) {
 	return func(out io.Writer, _ int) (int, error) {
 		err := w.describeTableIndexes(out, sp, tp)
 		if err != nil {
@@ -298,13 +283,13 @@ func (w DefaultWriter) tableDetailsSummary(sp, tp string) func(io.Writer, int) (
 		}
 		err = w.describeTableConstraints(
 			out,
-			Filter{Schema: sp, Parent: tp},
-			func(r Result) bool {
-				c := r.(*Constraint)
+			md.Filter{Schema: sp, Parent: tp},
+			func(r md.Result) bool {
+				c := r.(*md.Constraint)
 				return c.Type == "CHECK" && c.CheckClause != "" && !strings.HasSuffix(c.CheckClause, " IS NOT NULL")
 			},
 			"Check constraints:",
-			func(out io.Writer, c *Constraint) error {
+			func(out io.Writer, c *md.Constraint) error {
 				_, err := fmt.Fprintf(out, "  \"%s\" %s (%s)\n", c.Name, c.Type, c.CheckClause)
 				return err
 			},
@@ -314,10 +299,10 @@ func (w DefaultWriter) tableDetailsSummary(sp, tp string) func(io.Writer, int) (
 		}
 		err = w.describeTableConstraints(
 			out,
-			Filter{Schema: sp, Parent: tp},
-			func(r Result) bool { return r.(*Constraint).Type == "FOREIGN KEY" },
+			md.Filter{Schema: sp, Parent: tp},
+			func(r md.Result) bool { return r.(*md.Constraint).Type == "FOREIGN KEY" },
 			"Foreign-key constraints:",
-			func(out io.Writer, c *Constraint) error {
+			func(out io.Writer, c *md.Constraint) error {
 				columns, foreignColumns, err := w.getConstraintColumns(c.Catalog, c.Schema, c.Table, c.Name)
 				if err != nil {
 					return err
@@ -338,10 +323,10 @@ func (w DefaultWriter) tableDetailsSummary(sp, tp string) func(io.Writer, int) (
 		}
 		err = w.describeTableConstraints(
 			out,
-			Filter{Schema: sp, Reference: tp},
-			func(r Result) bool { return r.(*Constraint).Type == "FOREIGN KEY" },
+			md.Filter{Schema: sp, Reference: tp},
+			func(r md.Result) bool { return r.(*md.Constraint).Type == "FOREIGN KEY" },
 			"Referenced by:",
-			func(out io.Writer, c *Constraint) error {
+			func(out io.Writer, c *md.Constraint) error {
 				columns, foreignColumns, err := w.getConstraintColumns(c.Catalog, c.Schema, c.Table, c.Name)
 				if err != nil {
 					return err
@@ -366,12 +351,12 @@ func (w DefaultWriter) tableDetailsSummary(sp, tp string) func(io.Writer, int) (
 	}
 }
 
-func (w DefaultWriter) describeTableTriggers(out io.Writer, sp, tp string) error {
-	r, ok := w.r.(TriggerReader)
+func (w IngresWriter) describeTableTriggers(out io.Writer, sp, tp string) error {
+	r, ok := w.r.(md.TriggerReader)
 	if !ok {
 		return nil
 	}
-	res, err := r.Triggers(Filter{Schema: sp, Parent: tp})
+	res, err := r.Triggers(md.Filter{Schema: sp, Parent: tp})
 	if err != nil && err != text.ErrNotSupported {
 		return fmt.Errorf("failed to list triggers for table %s: %w", tp, err)
 	}
@@ -391,12 +376,12 @@ func (w DefaultWriter) describeTableTriggers(out io.Writer, sp, tp string) error
 	return nil
 }
 
-func (w DefaultWriter) describeTableIndexes(out io.Writer, sp, tp string) error {
-	r, ok := w.r.(IndexReader)
+func (w IngresWriter) describeTableIndexes(out io.Writer, sp, tp string) error {
+	r, ok := w.r.(md.IndexReader)
 	if !ok {
 		return nil
 	}
-	res, err := r.Indexes(Filter{Schema: sp, Parent: tp})
+	res, err := r.Indexes(md.Filter{Schema: sp, Parent: tp})
 	if err != nil && err != text.ErrNotSupported {
 		return fmt.Errorf("failed to list indexes for table %s: %w", tp, err)
 	}
@@ -413,10 +398,10 @@ func (w DefaultWriter) describeTableIndexes(out io.Writer, sp, tp string) error 
 		i := res.Get()
 		primary := ""
 		unique := ""
-		if i.IsPrimary == YES {
+		if i.IsPrimary == md.YES {
 			primary = "PRIMARY_KEY, "
 		}
-		if i.IsUnique == YES {
+		if i.IsUnique == md.YES {
 			unique = "UNIQUE, "
 		}
 		i.Columns, err = w.getIndexColumns(i.Catalog, i.Schema, i.Table, i.Name)
@@ -428,9 +413,9 @@ func (w DefaultWriter) describeTableIndexes(out io.Writer, sp, tp string) error 
 	return nil
 }
 
-func (w DefaultWriter) getIndexColumns(c, s, t, i string) (string, error) {
-	r := w.r.(IndexColumnReader)
-	cols, err := r.IndexColumns(Filter{Catalog: c, Schema: s, Parent: t, Name: i})
+func (w IngresWriter) getIndexColumns(c, s, t, i string) (string, error) {
+	r := w.r.(md.IndexColumnReader)
+	cols, err := r.IndexColumns(md.Filter{Catalog: c, Schema: s, Parent: t, Name: i})
 	if err != nil {
 		return "", err
 	}
@@ -441,8 +426,8 @@ func (w DefaultWriter) getIndexColumns(c, s, t, i string) (string, error) {
 	return strings.Join(result, ", "), nil
 }
 
-func (w DefaultWriter) describeTableConstraints(out io.Writer, filter Filter, postFilter func(r Result) bool, label string, printer func(io.Writer, *Constraint) error) error {
-	r, ok := w.r.(ConstraintReader)
+func (w IngresWriter) describeTableConstraints(out io.Writer, filter md.Filter, postFilter func(r md.Result) bool, label string, printer func(io.Writer, *md.Constraint) error) error {
+	r, ok := w.r.(md.ConstraintReader)
 	if !ok {
 		return nil
 	}
@@ -470,9 +455,9 @@ func (w DefaultWriter) describeTableConstraints(out io.Writer, filter Filter, po
 	return nil
 }
 
-func (w DefaultWriter) getConstraintColumns(c, s, t, n string) (string, string, error) {
-	r := w.r.(ConstraintColumnReader)
-	cols, err := r.ConstraintColumns(Filter{Catalog: c, Schema: s, Parent: t, Name: n})
+func (w IngresWriter) getConstraintColumns(c, s, t, n string) (string, string, error) {
+	r := w.r.(md.ConstraintColumnReader)
+	cols, err := r.ConstraintColumns(md.Filter{Catalog: c, Schema: s, Parent: t, Name: n})
 	if err != nil {
 		return "", "", err
 	}
@@ -485,9 +470,9 @@ func (w DefaultWriter) getConstraintColumns(c, s, t, n string) (string, string, 
 	return strings.Join(columns, ", "), strings.Join(foreignColumns, ", "), nil
 }
 
-func (w DefaultWriter) describeSequences(sp, tp string, verbose, showSystem bool) (int, error) {
-	r := w.r.(SequenceReader)
-	res, err := r.Sequences(Filter{Schema: sp, Name: tp, WithSystem: showSystem})
+func (w IngresWriter) describeSequences(sp, tp string, verbose, showSystem bool) (int, error) {
+	r := w.r.(md.SequenceReader)
+	res, err := r.Sequences(md.Filter{Schema: sp, Name: tp, WithSystem: showSystem})
 	if err != nil && err != text.ErrNotSupported {
 		return 0, err
 	}
@@ -500,7 +485,7 @@ func (w DefaultWriter) describeSequences(sp, tp string, verbose, showSystem bool
 	for res.Next() {
 		s := res.Get()
 		// wrap current record into a separate recordSet
-		rows := NewSequenceSet([]Sequence{*s})
+		rows := md.NewSequenceSet([]md.Sequence{*s})
 		params := env.Pall()
 		params["footer"] = "off"
 		params["title"] = fmt.Sprintf("Sequence \"%s.%s\"\n", s.Schema, s.Name)
@@ -515,9 +500,9 @@ func (w DefaultWriter) describeSequences(sp, tp string, verbose, showSystem bool
 	return found, nil
 }
 
-func (w DefaultWriter) describeIndex(i *Index) error {
-	r := w.r.(IndexColumnReader)
-	res, err := r.IndexColumns(Filter{Schema: i.Schema, Parent: i.Table, Name: i.Name})
+func (w IngresWriter) describeIndex(i *md.Index) error {
+	r := w.r.(md.IndexColumnReader)
+	res, err := r.IndexColumns(md.Filter{Schema: i.Schema, Parent: i.Table, Name: i.Name})
 	if err != nil {
 		return fmt.Errorf("failed to get index columns: %w", err)
 	}
@@ -527,8 +512,8 @@ func (w DefaultWriter) describeIndex(i *Index) error {
 	}
 
 	res.SetColumns([]string{"Name", "Type"})
-	res.SetScanValues(func(r Result) []interface{} {
-		f := r.(*IndexColumn)
+	res.SetScanValues(func(r md.Result) []interface{} {
+		f := r.(*md.IndexColumn)
 		return []interface{}{f.Name, f.DataType}
 	})
 
@@ -536,7 +521,7 @@ func (w DefaultWriter) describeIndex(i *Index) error {
 	params["title"] = fmt.Sprintf("Index %s\n", qualifiedIdentifier(i.Schema, i.Name))
 	return w.encodeWithSummary(res, params, func(out io.Writer, _ int) (int, error) {
 		primary := ""
-		if i.IsPrimary == YES {
+		if i.IsPrimary == md.YES {
 			primary = "primary key, "
 		}
 		_, err := fmt.Fprintf(out, "%s%s, for table %s", primary, i.Type, i.Table)
@@ -545,15 +530,15 @@ func (w DefaultWriter) describeIndex(i *Index) error {
 }
 
 // ListAllDbs matching pattern
-func (w DefaultWriter) ListAllDbs(u *dburl.URL, pattern string, verbose bool) error {
+func (w IngresWriter) ListAllDbs(u *dburl.URL, pattern string, verbose bool) error {
 	if w.listAllDbs != nil {
 		return w.listAllDbs(pattern, verbose)
 	}
-	r, ok := w.r.(CatalogReader)
+	r, ok := w.r.(md.CatalogReader)
 	if !ok {
 		return fmt.Errorf(text.NotSupportedByDriver, `\l`, u.Driver)
 	}
-	res, err := r.Catalogs(Filter{Name: pattern})
+	res, err := r.Catalogs(md.Filter{Name: pattern})
 	if err != nil {
 		return fmt.Errorf("failed to list catalogs: %w", err)
 	}
@@ -565,8 +550,8 @@ func (w DefaultWriter) ListAllDbs(u *dburl.URL, pattern string, verbose bool) er
 }
 
 // ListTables matching pattern
-func (w DefaultWriter) ListTables(u *dburl.URL, tableTypes, pattern string, verbose, showSystem bool) error {
-	r, ok := w.r.(TableReader)
+func (w IngresWriter) ListTables(u *dburl.URL, tableTypes, pattern string, verbose, showSystem bool) error {
+	r, ok := w.r.(md.TableReader)
 	if !ok {
 		return fmt.Errorf(text.NotSupportedByDriver, `\dt`, u.Driver)
 	}
@@ -580,15 +565,15 @@ func (w DefaultWriter) ListTables(u *dburl.URL, tableTypes, pattern string, verb
 	if err != nil {
 		return fmt.Errorf("failed to parse search pattern: %w", err)
 	}
-	res, err := r.Tables(Filter{Schema: sp, Name: tp, Types: types, WithSystem: showSystem})
+	res, err := r.Tables(md.Filter{Schema: sp, Name: tp, Types: types, WithSystem: showSystem})
 	if err != nil {
 		return fmt.Errorf("failed to list tables: %w", err)
 	}
 	defer res.Close()
 	if !showSystem {
 		// in case the reader doesn't implement WithSystem
-		res.SetFilter(func(r Result) bool {
-			_, ok := w.systemSchemas[r.(*Table).Schema]
+		res.SetFilter(func(r md.Result) bool {
+			_, ok := w.systemSchemas[r.(*md.Table).Schema]
 			return !ok
 		})
 	}
@@ -597,14 +582,14 @@ func (w DefaultWriter) ListTables(u *dburl.URL, tableTypes, pattern string, verb
 		fmt.Fprintln(w.w)
 		return nil
 	}
-	columns := []string{"Schema", "Name", "Type"}
+	columns := []string{"Name", "Type"}
 	if verbose {
 		columns = append(columns, "Rows", "Size", "Comment")
 	}
 	res.SetColumns(columns)
-	res.SetScanValues(func(r Result) []interface{} {
-		f := r.(*Table)
-		v := []interface{}{f.Schema, f.Name, f.Type}
+	res.SetScanValues(func(r md.Result) []interface{} {
+		f := r.(*md.Table)
+		v := []interface{}{f.Name, f.Type}
 		if verbose {
 			v = append(v, f.Rows, f.Size, f.Comment)
 		}
@@ -617,12 +602,12 @@ func (w DefaultWriter) ListTables(u *dburl.URL, tableTypes, pattern string, verb
 }
 
 // ListSchemas matching pattern
-func (w DefaultWriter) ListSchemas(u *dburl.URL, pattern string, verbose, showSystem bool) error {
-	r, ok := w.r.(SchemaReader)
+func (w IngresWriter) ListSchemas(u *dburl.URL, pattern string, verbose, showSystem bool) error {
+	r, ok := w.r.(md.SchemaReader)
 	if !ok {
 		return fmt.Errorf(text.NotSupportedByDriver, `\d`, u.Driver)
 	}
-	res, err := r.Schemas(Filter{Name: pattern, WithSystem: showSystem})
+	res, err := r.Schemas(md.Filter{Name: pattern, WithSystem: showSystem})
 	if err != nil {
 		return fmt.Errorf("failed to list schemas: %w", err)
 	}
@@ -630,8 +615,8 @@ func (w DefaultWriter) ListSchemas(u *dburl.URL, pattern string, verbose, showSy
 
 	if !showSystem {
 		// in case the reader doesn't implement WithSystem
-		res.SetFilter(func(r Result) bool {
-			_, ok := w.systemSchemas[r.(*Schema).Schema]
+		res.SetFilter(func(r md.Result) bool {
+			_, ok := w.systemSchemas[r.(*md.Schema).Schema]
 			return !ok
 		})
 	}
@@ -641,8 +626,8 @@ func (w DefaultWriter) ListSchemas(u *dburl.URL, pattern string, verbose, showSy
 }
 
 // ListIndexes matching pattern
-func (w DefaultWriter) ListIndexes(u *dburl.URL, pattern string, verbose, showSystem bool) error {
-	r, ok := w.r.(IndexReader)
+func (w IngresWriter) ListIndexes(u *dburl.URL, pattern string, verbose, showSystem bool) error {
+	r, ok := w.r.(md.IndexReader)
 	if !ok {
 		return fmt.Errorf(text.NotSupportedByDriver, `\di`, u.Driver)
 	}
@@ -650,7 +635,7 @@ func (w DefaultWriter) ListIndexes(u *dburl.URL, pattern string, verbose, showSy
 	if err != nil {
 		return fmt.Errorf("failed to parse search pattern: %w", err)
 	}
-	res, err := r.Indexes(Filter{Schema: sp, Name: tp, WithSystem: showSystem})
+	res, err := r.Indexes(md.Filter{Schema: sp, Name: tp, WithSystem: showSystem})
 	if err != nil {
 		return fmt.Errorf("failed to list indexes: %w", err)
 	}
@@ -658,8 +643,8 @@ func (w DefaultWriter) ListIndexes(u *dburl.URL, pattern string, verbose, showSy
 
 	if !showSystem {
 		// in case the reader doesn't implement WithSystem
-		res.SetFilter(func(r Result) bool {
-			_, ok := w.systemSchemas[r.(*Index).Schema]
+		res.SetFilter(func(r md.Result) bool {
+			_, ok := w.systemSchemas[r.(*md.Index).Schema]
 			return !ok
 		})
 	}
@@ -674,8 +659,8 @@ func (w DefaultWriter) ListIndexes(u *dburl.URL, pattern string, verbose, showSy
 		columns = append(columns, "Primary?", "Unique?")
 	}
 	res.SetColumns(columns)
-	res.SetScanValues(func(r Result) []interface{} {
-		f := r.(*Index)
+	res.SetScanValues(func(r md.Result) []interface{} {
+		f := r.(*md.Index)
 		v := []interface{}{f.Schema, f.Name, f.Type, f.Table}
 		if verbose {
 			v = append(v, f.IsPrimary, f.IsUnique)
@@ -689,8 +674,8 @@ func (w DefaultWriter) ListIndexes(u *dburl.URL, pattern string, verbose, showSy
 }
 
 // ShowStats of columns for tables matching pattern
-func (w DefaultWriter) ShowStats(u *dburl.URL, statTypes, pattern string, verbose bool, k int) error {
-	r, ok := w.r.(ColumnStatReader)
+func (w IngresWriter) ShowStats(u *dburl.URL, statTypes, pattern string, verbose bool, k int) error {
+	r, ok := w.r.(md.ColumnStatReader)
 	if !ok {
 		return fmt.Errorf(text.NotSupportedByDriver, `\ss`, u.Driver)
 	}
@@ -700,9 +685,9 @@ func (w DefaultWriter) ShowStats(u *dburl.URL, statTypes, pattern string, verbos
 	}
 
 	rows := int64(0)
-	tr, ok := w.r.(TableReader)
+	tr, ok := w.r.(md.TableReader)
 	if ok {
-		tables, err := tr.Tables(Filter{Schema: sp, Name: tp})
+		tables, err := tr.Tables(md.Filter{Schema: sp, Name: tp})
 		if err != nil {
 			return fmt.Errorf("failed to get table entry: %w", err)
 		}
@@ -716,7 +701,7 @@ func (w DefaultWriter) ShowStats(u *dburl.URL, statTypes, pattern string, verbos
 	if verbose {
 		types = append(types, "extended")
 	}
-	res, err := r.ColumnStats(Filter{Schema: sp, Parent: tp, Types: types})
+	res, err := r.ColumnStats(md.Filter{Schema: sp, Parent: tp, Types: types})
 	if err != nil {
 		return fmt.Errorf("failed to get column stats: %w", err)
 	}
@@ -732,8 +717,8 @@ func (w DefaultWriter) ShowStats(u *dburl.URL, statTypes, pattern string, verbos
 		columns = append(columns, "Minimum value", "Maximum value", "Mean value", "Top N common values", "Top N values freqs")
 	}
 	res.SetColumns(columns)
-	res.SetScanValues(func(r Result) []interface{} {
-		f := r.(*ColumnStat)
+	res.SetScanValues(func(r md.Result) []interface{} {
+		f := r.(*md.ColumnStat)
 		freqs := []string{}
 		for _, freq := range f.TopNFreqs {
 			freqs = append(freqs, fmt.Sprintf("%.4f", freq))
@@ -773,8 +758,8 @@ func (w DefaultWriter) ShowStats(u *dburl.URL, statTypes, pattern string, verbos
 }
 
 // ListPrivilegeSummaries matching pattern
-func (w DefaultWriter) ListPrivilegeSummaries(u *dburl.URL, pattern string, showSystem bool) error {
-	r, ok := w.r.(PrivilegeSummaryReader)
+func (w IngresWriter) ListPrivilegeSummaries(u *dburl.URL, pattern string, showSystem bool) error {
+	r, ok := w.r.(md.PrivilegeSummaryReader)
 	if !ok {
 		return fmt.Errorf(text.NotSupportedByDriver, `\dp`, u.Driver)
 	}
@@ -790,21 +775,21 @@ func (w DefaultWriter) ListPrivilegeSummaries(u *dburl.URL, pattern string, show
 			types = append(types, v...)
 		}
 	}
-	res, err := r.PrivilegeSummaries(Filter{Schema: sp, Name: tp, WithSystem: showSystem, Types: types})
+	res, err := r.PrivilegeSummaries(md.Filter{Schema: sp, Name: tp, WithSystem: showSystem, Types: types})
 	if err != nil {
 		return fmt.Errorf("failed to list table privileges: %w", err)
 	}
 	defer res.Close()
 	if !showSystem {
 		// in case the reader doesn't implement WithSystem
-		res.SetFilter(func(r Result) bool {
-			_, ok := w.systemSchemas[r.(*PrivilegeSummary).Schema]
+		res.SetFilter(func(r md.Result) bool {
+			_, ok := w.systemSchemas[r.(*md.PrivilegeSummary).Schema]
 			return !ok
 		})
 	}
 
-	res.SetScanValues(func(r Result) []interface{} {
-		f := r.(*PrivilegeSummary)
+	res.SetScanValues(func(r md.Result) []interface{} {
+		f := r.(*md.PrivilegeSummary)
 
 		v := []interface{}{
 			f.Schema,

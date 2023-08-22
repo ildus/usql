@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/xo/dburl"
+	"github.com/xo/usql/dburl"
 	"github.com/xo/usql/drivers"
 	"github.com/xo/usql/drivers/metadata"
 	orameta "github.com/xo/usql/drivers/metadata/oracle"

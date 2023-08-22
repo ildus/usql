@@ -17,7 +17,7 @@ import (
 
 	vertigo "github.com/vertica/vertica-sql-go" // DRIVER
 	"github.com/vertica/vertica-sql-go/logger"
-	"github.com/xo/dburl"
+	"github.com/xo/usql/dburl"
 	"github.com/xo/usql/drivers"
 )
 
