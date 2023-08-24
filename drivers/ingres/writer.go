@@ -31,7 +31,6 @@ func NewIngresWriter(r md.Reader, opts ...WriterOption) func(db md.DB, w io.Writ
 		tableTypes: map[rune][]string{
 			't': {"TABLE", "BASE TABLE", "SYSTEM TABLE", "SYNONYM", "LOCAL TEMPORARY", "GLOBAL TEMPORARY"},
 			'v': {"VIEW", "SYSTEM VIEW"},
-			's': {"SEQUENCE"},
 		},
 		funcTypes: map[rune][]string{
 			'a': {"AGGREGATE"},
@@ -284,11 +283,8 @@ func (w IngresWriter) tableDetailsSummary(sp, tp string) func(io.Writer, int) (i
 		err = w.describeTableConstraints(
 			out,
 			md.Filter{Schema: sp, Parent: tp},
-			func(r md.Result) bool {
-				c := r.(*md.Constraint)
-				return c.Type == "CHECK" && c.CheckClause != "" && !strings.HasSuffix(c.CheckClause, " IS NOT NULL")
-			},
-			"Check constraints:",
+                        nil,
+			"\nConstraints:",
 			func(out io.Writer, c *md.Constraint) error {
 				_, err := fmt.Fprintf(out, "  \"%s\" %s (%s)\n", c.Name, c.Type, c.CheckClause)
 				return err
@@ -297,52 +293,6 @@ func (w IngresWriter) tableDetailsSummary(sp, tp string) func(io.Writer, int) (i
 		if err != nil {
 			return 0, err
 		}
-		err = w.describeTableConstraints(
-			out,
-			md.Filter{Schema: sp, Parent: tp},
-			func(r md.Result) bool { return r.(*md.Constraint).Type == "FOREIGN KEY" },
-			"Foreign-key constraints:",
-			func(out io.Writer, c *md.Constraint) error {
-				columns, foreignColumns, err := w.getConstraintColumns(c.Catalog, c.Schema, c.Table, c.Name)
-				if err != nil {
-					return err
-				}
-				_, err = fmt.Fprintf(out, "  \"%s\" %s (%s) REFERENCES %s(%s) ON UPDATE %s ON DELETE %s\n",
-					c.Name,
-					c.Type,
-					columns,
-					c.ForeignTable,
-					foreignColumns,
-					c.UpdateRule,
-					c.DeleteRule)
-				return err
-			},
-		)
-		if err != nil {
-			return 0, err
-		}
-		err = w.describeTableConstraints(
-			out,
-			md.Filter{Schema: sp, Reference: tp},
-			func(r md.Result) bool { return r.(*md.Constraint).Type == "FOREIGN KEY" },
-			"Referenced by:",
-			func(out io.Writer, c *md.Constraint) error {
-				columns, foreignColumns, err := w.getConstraintColumns(c.Catalog, c.Schema, c.Table, c.Name)
-				if err != nil {
-					return err
-				}
-				_, err = fmt.Fprintf(out, "  TABLE \"%s\" CONSTRAINT \"%s\" %s (%s) REFERENCES %s(%s) ON UPDATE %s ON DELETE %s\n",
-					c.Table,
-					c.Name,
-					c.Type,
-					columns,
-					c.ForeignTable,
-					foreignColumns,
-					c.UpdateRule,
-					c.DeleteRule)
-				return err
-			},
-		)
 		err = w.describeTableTriggers(out, sp, tp)
 		if err != nil {
 			return 0, err

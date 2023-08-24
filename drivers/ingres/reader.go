@@ -64,7 +64,6 @@ ON t.table_reltid = c.comtabbase and t.table_reltidx = c.comtabidx
 			"TABLE":             {'T', 'P'},
 			"VIEW":              {'V'},
 			"MATERIALIZED VIEW": {'V'},
-			"SEQUENCE":          {'S'},
 		}
 		pholders := []string{"''"}
 		for _, t := range f.Types {
@@ -329,6 +328,111 @@ LEFT JOIN iirelation ri ON ri.reltid = attrelid and ri.reltidx = attrelidx`
 		return nil, rows.Err()
 	}
 	return metadata.NewIndexColumnSet(results), nil
+}
+
+func (r MetadataReader) Constraints(f metadata.Filter) (*metadata.ConstraintSet, error) {
+	qstr := `SELECT
+    constraint_name,
+    schema_name,
+    table_name,
+    text_segment
+FROM iiconstraints
+`
+
+	vals := []interface{}{}
+	conds := []string{}
+
+	if f.Parent != "" {
+		vals = append(vals, f.Parent)
+		conds = append(conds, "table_name = ~V ")
+	}
+
+	if f.Name != "" {
+		vals = append(vals, f.Name)
+		conds = append(conds, "constraint_name = ~V ")
+	}
+
+	rows, closeRows, err := r.query(qstr, conds, "create_date", vals...)
+	if err != nil {
+		return nil, err
+	}
+	defer closeRows()
+	var results []metadata.Constraint
+	for rows.Next() {
+		rec := metadata.Constraint{}
+		if err := rows.Scan(
+			&rec.Name,
+			&rec.Schema,
+			&rec.Table,
+			&rec.Type,
+		); err != nil {
+			return nil, err
+		}
+		results = append(results, rec)
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+	return metadata.NewConstraintSet(results), nil
+}
+
+func (r MetadataReader) ConstraintColumns(f metadata.Filter) (*metadata.ConstraintColumnSet, error) {
+	var results []metadata.ConstraintColumn
+	return metadata.NewConstraintColumnSet(results), nil
+}
+
+func (r MetadataReader) Sequences(f metadata.Filter) (*metadata.SequenceSet, error) {
+	qstr := `SELECT
+    seq_owner,
+    seq_name,
+    data_type,
+    start_value,
+    min_value,
+    max_value,
+    increment_value,
+    cycle_flag
+FROM iisequences
+`
+
+	vals := []interface{}{}
+	conds := []string{}
+
+	if f.Parent != "" {
+		vals = append(vals, f.Parent)
+		conds = append(conds, "seq_owner = ~V ")
+	}
+
+	if f.Name != "" {
+		vals = append(vals, f.Name)
+		conds = append(conds, "seq_name = ~V ")
+	}
+
+	rows, closeRows, err := r.query(qstr, conds, "create_date", vals...)
+	if err != nil {
+		return nil, err
+	}
+	defer closeRows()
+	var results []metadata.Sequence
+	for rows.Next() {
+		rec := metadata.Sequence{}
+		if err := rows.Scan(
+			&rec.Schema,
+			&rec.Name,
+			&rec.DataType,
+			&rec.Start,
+			&rec.Min,
+			&rec.Max,
+			&rec.Increment,
+			&rec.Cycles,
+		); err != nil {
+			return nil, err
+		}
+		results = append(results, rec)
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+	return metadata.NewSequenceSet(results), nil
 }
 
 func (r MetadataReader) query(qstr string, conds []string, order string, vals ...interface{}) (*sql.Rows, func(), error) {
