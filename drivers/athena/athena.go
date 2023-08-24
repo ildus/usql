@@ -8,7 +8,7 @@ import (
 	"regexp"
 
 	_ "github.com/uber/athenadriver/go" // DRIVER: awsathena
-	"github.com/xo/usql/drivers"
+	"github.com/ildus/usql/drivers"
 )
 
 func init() {

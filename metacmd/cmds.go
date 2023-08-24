@@ -14,10 +14,10 @@ import (
 	"time"
 
 	"github.com/alecthomas/kingpin/v2"
-	"github.com/xo/usql/dburl"
-	"github.com/xo/usql/drivers"
-	"github.com/xo/usql/env"
-	"github.com/xo/usql/text"
+	"github.com/ildus/usql/dburl"
+	"github.com/ildus/usql/drivers"
+	"github.com/ildus/usql/env"
+	"github.com/ildus/usql/text"
 )
 
 // Cmd is a command implementation.

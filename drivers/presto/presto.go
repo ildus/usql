@@ -8,7 +8,7 @@ import (
 	"regexp"
 
 	_ "github.com/prestodb/presto-go-client/presto" // DRIVER
-	"github.com/xo/usql/drivers"
+	"github.com/ildus/usql/drivers"
 )
 
 func init() {

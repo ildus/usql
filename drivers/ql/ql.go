@@ -4,7 +4,7 @@
 package ql
 
 import (
-	"github.com/xo/usql/drivers"
+	"github.com/ildus/usql/drivers"
 	"modernc.org/ql" // DRIVER
 )
 

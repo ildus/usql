@@ -6,7 +6,7 @@ package genji
 
 import (
 	_ "github.com/genjidb/genji/driver" // DRIVER
-	"github.com/xo/usql/drivers"
+	"github.com/ildus/usql/drivers"
 )
 
 func init() {

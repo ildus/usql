@@ -5,7 +5,7 @@ package ots
 
 import (
 	_ "github.com/aliyun/aliyun-tablestore-go-sql-driver" // DRIVER
-	"github.com/xo/usql/drivers"
+	"github.com/ildus/usql/drivers"
 )
 
 func init() {

@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/thda/tds" // DRIVER: tds
-	"github.com/xo/usql/drivers"
+	"github.com/ildus/usql/drivers"
 )
 
 func init() {

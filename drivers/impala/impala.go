@@ -6,7 +6,7 @@ package impala
 
 import (
 	_ "github.com/bippio/go-impala" // DRIVER
-	"github.com/xo/usql/drivers"
+	"github.com/ildus/usql/drivers"
 )
 
 func init() {

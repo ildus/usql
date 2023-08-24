@@ -15,8 +15,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/xo/usql/dburl/passfile"
-	"github.com/xo/usql/text"
+	"github.com/ildus/usql/dburl/passfile"
+	"github.com/ildus/usql/text"
 )
 
 // Getenv tries retrieving successive keys from os environment variables.

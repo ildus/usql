@@ -3,8 +3,8 @@ package internal
 import (
 	"runtime"
 
-	"github.com/xo/usql/dburl"
-	"github.com/xo/usql/drivers"
+	"github.com/ildus/usql/dburl"
+	"github.com/ildus/usql/drivers"
 )
 
 func init() {

@@ -7,8 +7,8 @@ package ingres
 
 import (
 	_ "github.com/ildus/ingres" // DRIVER
-	"github.com/xo/usql/drivers"
-	md "github.com/xo/usql/drivers/metadata"
+	"github.com/ildus/usql/drivers"
+	md "github.com/ildus/usql/drivers/metadata"
 
 	"io"
 )

@@ -14,9 +14,9 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/stdlib" // DRIVER
-	"github.com/xo/usql/drivers"
-	"github.com/xo/usql/drivers/metadata"
-	pgmeta "github.com/xo/usql/drivers/metadata/postgres"
+	"github.com/ildus/usql/drivers"
+	"github.com/ildus/usql/drivers/metadata"
+	pgmeta "github.com/ildus/usql/drivers/metadata/postgres"
 )
 
 func init() {

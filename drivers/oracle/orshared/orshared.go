@@ -9,11 +9,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/xo/usql/dburl"
-	"github.com/xo/usql/drivers"
-	"github.com/xo/usql/drivers/metadata"
-	orameta "github.com/xo/usql/drivers/metadata/oracle"
-	"github.com/xo/usql/env"
+	"github.com/ildus/usql/dburl"
+	"github.com/ildus/usql/drivers"
+	"github.com/ildus/usql/drivers/metadata"
+	orameta "github.com/ildus/usql/drivers/metadata/oracle"
+	"github.com/ildus/usql/env"
 )
 
 // Register registers an oracle driver.

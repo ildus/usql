@@ -4,10 +4,10 @@ import (
 	"time"
 
 	"github.com/gohxs/readline"
-	"github.com/xo/usql/drivers"
-	"github.com/xo/usql/drivers/completer"
-	"github.com/xo/usql/drivers/metadata"
-	infos "github.com/xo/usql/drivers/metadata/informationschema"
+	"github.com/ildus/usql/drivers"
+	"github.com/ildus/usql/drivers/completer"
+	"github.com/ildus/usql/drivers/metadata"
+	infos "github.com/ildus/usql/drivers/metadata/informationschema"
 )
 
 var (

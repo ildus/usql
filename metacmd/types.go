@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xo/usql/dburl"
-	"github.com/xo/usql/drivers"
-	"github.com/xo/usql/drivers/metadata"
-	"github.com/xo/usql/env"
-	"github.com/xo/usql/rline"
-	"github.com/xo/usql/stmt"
-	"github.com/xo/usql/text"
+	"github.com/ildus/usql/dburl"
+	"github.com/ildus/usql/drivers"
+	"github.com/ildus/usql/drivers/metadata"
+	"github.com/ildus/usql/env"
+	"github.com/ildus/usql/rline"
+	"github.com/ildus/usql/stmt"
+	"github.com/ildus/usql/text"
 )
 
 // Handler is the shared interface for a command handler.

@@ -11,8 +11,8 @@ import (
 	"strconv"
 
 	"github.com/xo/dburl"
-	"github.com/xo/usql/drivers"
-	"github.com/xo/usql/drivers/sqlite3/sqshared"
+	"github.com/ildus/usql/drivers"
+	"github.com/ildus/usql/drivers/sqlite3/sqshared"
 	"modernc.org/sqlite" // DRIVER
 )
 

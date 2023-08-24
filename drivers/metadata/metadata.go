@@ -3,8 +3,8 @@ package metadata
 import (
 	"strings"
 
-	"github.com/xo/usql/dburl"
-	"github.com/xo/usql/text"
+	"github.com/ildus/usql/dburl"
+	"github.com/ildus/usql/text"
 )
 
 // ExtendedReader of all database metadata in a structured format.

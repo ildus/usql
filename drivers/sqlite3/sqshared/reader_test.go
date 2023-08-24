@@ -16,7 +16,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/archive"
-	"github.com/xo/usql/drivers/metadata"
+	"github.com/ildus/usql/drivers/metadata"
 )
 
 var (

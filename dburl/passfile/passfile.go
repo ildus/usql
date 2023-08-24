@@ -14,7 +14,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/xo/usql/dburl"
+	"github.com/ildus/usql/dburl"
 )
 
 // Entry is a passfile entry.

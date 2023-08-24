@@ -5,7 +5,7 @@
 package hive
 
 import (
-	"github.com/xo/usql/drivers"
+	"github.com/ildus/usql/drivers"
 	_ "sqlflow.org/gohive" // DRIVER
 )
 

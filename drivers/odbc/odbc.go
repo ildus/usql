@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/alexbrainman/odbc" // DRIVER
-	"github.com/xo/usql/drivers"
+	"github.com/ildus/usql/drivers"
 )
 
 func init() {

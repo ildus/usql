@@ -11,7 +11,7 @@ import (
 
 	"github.com/mithrandie/csvq-driver" // DRIVER
 	"github.com/mithrandie/csvq/lib/query"
-	"github.com/xo/usql/drivers"
+	"github.com/ildus/usql/drivers"
 )
 
 func init() {

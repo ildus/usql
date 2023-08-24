@@ -9,9 +9,9 @@ import (
 	"log"
 
 	"github.com/IBM/nzgo/v12" // DRIVER: nzgo
-	"github.com/xo/usql/drivers"
-	"github.com/xo/usql/drivers/metadata"
-	infos "github.com/xo/usql/drivers/metadata/informationschema"
+	"github.com/ildus/usql/drivers"
+	"github.com/ildus/usql/drivers/metadata"
+	infos "github.com/ildus/usql/drivers/metadata/informationschema"
 )
 
 func init() {

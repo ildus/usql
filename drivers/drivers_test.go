@@ -1,6 +1,6 @@
 // Package drivers_test runs integration tests for drivers package
 // on real databases running in containers. During development, to avoid rebuilding
-// containers every run, add the `-cleanup=false` flags when calling `go test github.com/xo/usql/drivers`.
+// containers every run, add the `-cleanup=false` flags when calling `go test github.com/ildus/usql/drivers`.
 package drivers_test
 
 import (
@@ -19,10 +19,10 @@ import (
 
 	dt "github.com/ory/dockertest/v3"
 	dc "github.com/ory/dockertest/v3/docker"
-	"github.com/xo/usql/dburl"
-	"github.com/xo/usql/drivers"
-	"github.com/xo/usql/drivers/metadata"
-	_ "github.com/xo/usql/internal"
+	"github.com/ildus/usql/dburl"
+	"github.com/ildus/usql/drivers"
+	"github.com/ildus/usql/drivers/metadata"
+	_ "github.com/ildus/usql/internal"
 )
 
 type Database struct {

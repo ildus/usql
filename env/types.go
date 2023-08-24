@@ -13,7 +13,7 @@ import (
 
 	syslocale "github.com/jeandeaual/go-locale"
 	"github.com/xo/terminfo"
-	"github.com/xo/usql/text"
+	"github.com/ildus/usql/text"
 )
 
 type varName struct {

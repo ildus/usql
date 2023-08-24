@@ -10,7 +10,7 @@ import (
 	"database/sql"
 
 	_ "github.com/mattn/go-adodb" // DRIVER
-	"github.com/xo/usql/drivers"
+	"github.com/ildus/usql/drivers"
 )
 
 func init() {

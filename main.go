@@ -12,12 +12,12 @@ import (
 	"os/user"
 	"strings"
 
-	"github.com/xo/usql/drivers"
-	"github.com/xo/usql/env"
-	"github.com/xo/usql/handler"
-	"github.com/xo/usql/internal"
-	"github.com/xo/usql/rline"
-	"github.com/xo/usql/text"
+	"github.com/ildus/usql/drivers"
+	"github.com/ildus/usql/env"
+	"github.com/ildus/usql/handler"
+	"github.com/ildus/usql/internal"
+	"github.com/ildus/usql/rline"
+	"github.com/ildus/usql/text"
 )
 
 func main() {
@@ -66,7 +66,7 @@ func main() {
 			if text.CommandVersion == "0.0.0-dev" || strings.Contains(text.CommandVersion, "-") {
 				rev = "master"
 			}
-			fmt.Fprintf(os.Stderr, "\ntry:\n\n  go install -tags %s github.com/xo/usql@%s\n\n", tag, rev)
+			fmt.Fprintf(os.Stderr, "\ntry:\n\n  go install -tags %s github.com/ildus/usql@%s\n\n", tag, rev)
 		}
 		os.Exit(1)
 	}

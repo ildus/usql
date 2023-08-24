@@ -3,8 +3,8 @@
 package metacmd
 
 import (
-	"github.com/xo/usql/stmt"
-	"github.com/xo/usql/text"
+	"github.com/ildus/usql/stmt"
+	"github.com/ildus/usql/text"
 )
 
 // Metacmd represents a command and associated meta information about it.

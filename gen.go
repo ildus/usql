@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"github.com/mattn/go-runewidth"
-	"github.com/xo/usql/dburl"
+	"github.com/ildus/usql/dburl"
 	"github.com/yookoala/realpath"
 )
 
@@ -106,7 +106,7 @@ func run(licenseStart int, licenseAuthor string, dburlGen bool, dburlDir string,
 }
 
 func getDburlDir() string {
-	dir := filepath.Join(os.Getenv("GOPATH"), "src/github.com/xo/usql/dburl")
+	dir := filepath.Join(os.Getenv("GOPATH"), "src/github.com/ildus/usql/dburl")
 	var err error
 	if dir, err = realpath.Realpath(dir); err != nil {
 		panic(err)
@@ -275,7 +275,7 @@ func writeInternal(wd string, drivers ...map[string]DriverInfo) error {
 			panic(v.Tag)
 		}
 		tags += " && !no_" + v.Tag
-		buf, err := format.Source([]byte(fmt.Sprintf(internalTagGo, tags, "github.com/xo/usql/drivers/"+v.Tag, v.Desc)))
+		buf, err := format.Source([]byte(fmt.Sprintf(internalTagGo, tags, "github.com/ildus/usql/drivers/"+v.Tag, v.Desc)))
 		if err != nil {
 			return err
 		}

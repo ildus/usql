@@ -16,12 +16,12 @@ import (
 	"strings"
 
 	"github.com/lib/pq" // DRIVER
-	"github.com/xo/usql/dburl"
-	"github.com/xo/usql/drivers"
-	"github.com/xo/usql/drivers/metadata"
-	pgmeta "github.com/xo/usql/drivers/metadata/postgres"
-	"github.com/xo/usql/env"
-	"github.com/xo/usql/text"
+	"github.com/ildus/usql/dburl"
+	"github.com/ildus/usql/drivers"
+	"github.com/ildus/usql/drivers/metadata"
+	pgmeta "github.com/ildus/usql/drivers/metadata/postgres"
+	"github.com/ildus/usql/env"
+	"github.com/ildus/usql/text"
 )
 
 func init() {

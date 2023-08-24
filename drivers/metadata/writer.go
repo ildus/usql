@@ -7,10 +7,10 @@ import (
 	"io"
 	"strings"
 
-	"github.com/xo/usql/dburl"
+	"github.com/ildus/usql/dburl"
 	"github.com/xo/tblfmt"
-	"github.com/xo/usql/env"
-	"github.com/xo/usql/text"
+	"github.com/ildus/usql/env"
+	"github.com/ildus/usql/text"
 )
 
 // DB is the common interface for database operations, compatible with

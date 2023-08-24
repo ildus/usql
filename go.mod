@@ -1,4 +1,4 @@
-module github.com/xo/usql
+module github.com/ildus/usql
 
 go 1.21
 

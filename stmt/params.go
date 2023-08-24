@@ -3,7 +3,7 @@ package stmt
 import (
 	"unicode"
 
-	"github.com/xo/usql/text"
+	"github.com/ildus/usql/text"
 )
 
 // Params holds information about command parameters.

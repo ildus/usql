@@ -10,8 +10,8 @@ import (
 	"testing"
 
 	dt "github.com/ory/dockertest/v3"
-	"github.com/xo/usql/drivers/clickhouse"
-	"github.com/xo/usql/drivers/metadata"
+	"github.com/ildus/usql/drivers/clickhouse"
+	"github.com/ildus/usql/drivers/metadata"
 	"github.com/yookoala/realpath"
 )
 

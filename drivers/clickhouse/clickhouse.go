@@ -7,7 +7,7 @@ import (
 	"database/sql"
 
 	_ "github.com/ClickHouse/clickhouse-go/v2" // DRIVER
-	"github.com/xo/usql/drivers"
+	"github.com/ildus/usql/drivers"
 )
 
 func init() {

@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	_ "github.com/sijms/go-ora/v2" // DRIVER
-	"github.com/xo/usql/drivers/oracle/orshared"
+	"github.com/ildus/usql/drivers/oracle/orshared"
 )
 
 func init() {

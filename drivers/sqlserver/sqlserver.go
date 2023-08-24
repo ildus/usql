@@ -12,8 +12,8 @@ import (
 	"strings"
 
 	sqlserver "github.com/microsoft/go-mssqldb" // DRIVER
-	"github.com/xo/usql/drivers"
-	"github.com/xo/usql/drivers/metadata"
+	"github.com/ildus/usql/drivers"
+	"github.com/ildus/usql/drivers/metadata"
 )
 
 func init() {
