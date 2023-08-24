@@ -1,18 +1,5 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/xo/usql-logo/master/usql.png" height="120">
-</p>
-
-<p align="center">
-  <a href="#installing" title="Installing">Installing</a> |
-  <a href="#building" title="Building">Building</a> |
-  <a href="#database-support" title="Database Support">Database Support</a> |
-  <a href="#using" title="Using">Using</a> |
-  <a href="#features-and-compatibility" title="Features and Compatibility">Features and Compatibility</a> |
-  <a href="https://github.com/xo/usql/releases" title="Releases">Releases</a> |
-  <a href="#contributing" title="Contributing">Contributing</a>
-</p>
-
-<br/>
+`usql` (github.com/xo/usql) fork with Ingres (Vector) database support
+===================================================
 
 `usql` is a universal command-line interface for PostgreSQL, MySQL, Oracle
 Database, SQLite3, Microsoft SQL Server, [and many other databases][databases]
@@ -49,88 +36,11 @@ for other databases.
 
 ## Installing
 
-`usql` can be installed [via Release][], [via Homebrew][], [via AUR][], [via
-Scoop][] or [via Go][]:
-
-[via Release]: #installing-via-release
-[via Homebrew]: #installing-via-homebrew-macos-and-linux
-[via AUR]: #installing-via-aur-arch-linux
-[via Scoop]: #installing-via-scoop-windows
-[via Go]: #installing-via-go
-
-### Installing via Release
-
-1. [Download a release for your platform][releases]
-2. Extract the `usql` or `usql.exe` file from the `.tar.bz2` or `.zip` file
-3. Move the extracted executable to somewhere on your `$PATH` (Linux/macOS) or
-  `%PATH%` (Windows)
-
-### Installing via Homebrew (macOS and Linux)
-
-Install `usql` from the [`xo/xo` tap][xo-tap] in the usual way with the [`brew`
-command][homebrew]:
-
-```sh
-# install usql with most drivers
-$ brew install xo/xo/usql
-```
-
-Support for [ODBC databases][databases] is available through the `--with-odbc`
-install flag:
-
-```sh
-# add xo tap
-$ brew tap xo/xo
-
-# install usql with odbc support
-$ brew install --with-odbc usql
-```
-
-### Installing via AUR (Arch Linux)
-
-Install `usql` from the [Arch Linux AUR][aur] in the usual way with the [`yay`
-command][yay]:
-
-```sh
-# install usql with most drivers
-$ yay -S usql
-```
-
-Alternately, build and [install using `makepkg`][arch-makepkg]:
-
-```sh
-$ git clone https://aur.archlinux.org/usql.git && cd usql
-$ makepkg -si
-==> Making package: usql 0.12.10-1 (Fri 26 Aug 2022 05:56:09 AM WIB)
-==> Checking runtime dependencies...
-==> Checking buildtime dependencies...
-==> Retrieving sources...
-  -> Downloading usql-0.12.10.tar.gz...
-...
-```
-
-### Installing via Scoop (Windows)
-
-Install `usql` using [Scoop](https://scoop.sh):
-
-```powershell
-# Optional: Needed to run a remote script the first time
-> Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-
-# install scoop if not already installed
-> irm get.scoop.sh | iex
-
-# install usql with scoop
-> scoop install usql
-```
-
-### Installing via Go
-
 Install `usql` in the usual Go fashion:
 
 ```sh
 # install latest usql version with base drivers
-$ go install github.com/xo/usql@latest
+$ go install github.com/ildus/usql@latest
 ```
 
 See [below for information](#building) on `usql` build tags.
@@ -138,12 +48,10 @@ See [below for information](#building) on `usql` build tags.
 ## Building
 
 When building `usql` out-of-the-box with `go build` or `go install`, only the
-[`base` drivers][databases] for PostgreSQL, MySQL, SQLite3, Microsoft SQL
-Server, Oracle, CSVQ will be included in the build:
+[`base` drivers][databases] for PostgreSQL, MySQL, Ingres will be included in the build:
 
 ```sh
-# build/install with base drivers (PostgreSQL, MySQL, SQLite3, Microsoft SQL Server,
-# Oracle, CSVQ)
+# build/install with base drivers
 $ go install github.com/xo/usql@master
 ```
 
@@ -177,7 +85,7 @@ $ go install -tags all github.com/xo/usql@master
 ## Database Support
 
 `usql` works with all Go standard library compatible SQL drivers supported by
-[`github.com/xo/dburl`][dburl].
+[`github.com/ildus/usql/dburl`][dburl].
 
 The list of drivers that `usql` was built with can be displayed using the
 [`\drivers` command][commands]:
