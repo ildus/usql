@@ -16,7 +16,7 @@ import (
 
 	cql "github.com/MichaelS11/go-cql-driver" // DRIVER: cql
 	"github.com/gocql/gocql"
-	"github.com/xo/dburl"
+	"github.com/ildus/usql/dburl"
 	"github.com/ildus/usql/drivers"
 )
 

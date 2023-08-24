@@ -6,7 +6,7 @@
 //
 // See the [package documentation README section] for more details.
 //
-// [package documentation README section]: https://pkg.go.dev/github.com/xo/dburl#section-readme
+// [package documentation README section]: https://pkg.go.dev/github.com/ildus/usql/dburl#section-readme
 package dburl
 
 import (

@@ -10,7 +10,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/xo/dburl"
+	"github.com/ildus/usql/dburl"
 	"github.com/ildus/usql/drivers"
 	"github.com/ildus/usql/drivers/sqlite3/sqshared"
 	"modernc.org/sqlite" // DRIVER
