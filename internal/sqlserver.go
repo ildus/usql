@@ -1,4 +1,4 @@
-//go:build (!no_base || sqlserver) && !no_sqlserver
+//go:build (all || sqlserver) && !no_sqlserver
 
 package internal
 

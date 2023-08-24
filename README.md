@@ -217,10 +217,7 @@ associated database, scheme / build tag, and scheme aliases:
 | Ingres (Actian X, Vector, VectorH) | `ingres`        | `in`, `vector`, `actianx`                       | [github.com/ildus/ingres][d-ingres] <sup>[†][f-cgo]</sup>                   |
 | PostgreSQL                         | `postgres`      | `pg`, `pgsql`, `postgresql`                     | [github.com/lib/pq][d-postgres]                                             |
 | MySQL                              | `mysql`         | `my`, `maria`, `aurora`, `mariadb`, `percona`   | [github.com/go-sql-driver/mysql][d-mysql]                                   |
-| Microsoft SQL Server               | `sqlserver`     | `ms`, `mssql`, `azuresql`                       | [github.com/microsoft/go-mssqldb][d-sqlserver]                              |
-| Oracle Database                    | `oracle`        | `or`, `ora`, `oci`, `oci8`, `odpi`, `odpi-c`    | [github.com/sijms/go-ora/v2][d-oracle]                                      |
 | SQLite3                            | `sqlite3`       | `sq`, `file`, `sqlite`                          | [github.com/mattn/go-sqlite3][d-sqlite3] <sup>[†][f-cgo]</sup>              |
-| CSVQ                               | `csvq`          | `cs`, `csv`, `tsv`, `json`                      | [github.com/mithrandie/csvq-driver][d-csvq]                                 |
 |                                    |                 |                                                 |                                                                             |
 | Alibaba MaxCompute                 | `maxcompute`    | `mc`                                            | [sqlflow.org/gomaxcompute][d-maxcompute]                                    |
 | Alibaba Tablestore                 | `ots`           | `ot`, `tablestore`                              | [github.com/aliyun/aliyun-tablestore-go-sql-driver][d-ots]                  |
@@ -252,8 +249,11 @@ associated database, scheme / build tag, and scheme aliases:
 | Vertica                            | `vertica`       | `ve`                                            | [github.com/vertica/vertica-sql-go][d-vertica]                              |
 | VoltDB                             | `voltdb`        | `vo`, `vdb`, `volt`                             | [github.com/VoltDB/voltdb-client-go/voltdbclient][d-voltdb]                 |
 |                                    |                 |                                                 |                                                                             |
+| CSVQ                               | `csvq`          | `cs`, `csv`, `tsv`, `json`                      | [github.com/mithrandie/csvq-driver][d-csvq]                                 |
 | GO DRiver for ORacle               | `godror`        | `gr`                                            | [github.com/godror/godror][d-godror] <sup>[†][f-cgo]</sup>                  |
+| Microsoft SQL Server               | `sqlserver`     | `ms`, `mssql`, `azuresql`                       | [github.com/microsoft/go-mssqldb][d-sqlserver]                              |
 | ODBC                               | `odbc`          | `od`                                            | [github.com/alexbrainman/odbc][d-odbc] <sup>[†][f-cgo]</sup>                |
+| Oracle Database                    | `oracle`        | `or`, `ora`, `oci`, `oci8`, `odpi`, `odpi-c`    | [github.com/sijms/go-ora/v2][d-oracle]                                      |
 |                                    |                 |                                                 |                                                                             |
 | Amazon Redshift                    | `postgres`      | `rs`, `redshift`                                | [github.com/lib/pq][d-postgres] <sup>[‡][f-wire]</sup>                      |
 | CockroachDB                        | `postgres`      | `cr`, `cdb`, `crdb`, `cockroach`, `cockroachdb` | [github.com/lib/pq][d-postgres] <sup>[‡][f-wire]</sup>                      |
