@@ -39,7 +39,12 @@ func (r MetadataReader) Tables(f metadata.Filter) (*metadata.TableSet, error) {
   storage_structure as Storage,
   (table_pagesize * number_pages) AS Size,
   num_rows AS Rows,
-  coalesce(c.long_remark, '') as Comment
+  coalesce(c.long_remark, '') as Comment,
+  table_pagesize as PageSize,
+  create_date,
+  location_name,
+  table_version,
+  table_owner
 FROM iitables t
 LEFT JOIN iidbms_comment c
 ON t.table_reltid = c.comtabbase and t.table_reltidx = c.comtabidx
@@ -87,7 +92,13 @@ ON t.table_reltid = c.comtabbase and t.table_reltidx = c.comtabidx
 			&storage,
 			&rec.Size,
 			&rec.Rows,
-			&rec.Comment); err != nil {
+			&rec.Comment,
+			&rec.PageSize,
+			&rec.Created,
+			&rec.Location,
+			&rec.Version,
+			&rec.Owner,
+		); err != nil {
 			return nil, err
 		}
 

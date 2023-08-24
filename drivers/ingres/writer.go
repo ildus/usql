@@ -582,16 +582,16 @@ func (w IngresWriter) ListTables(u *dburl.URL, tableTypes, pattern string, verbo
 		fmt.Fprintln(w.w)
 		return nil
 	}
-	columns := []string{"Name", "Type"}
+	columns := []string{"Name", "Type", "Created", "Owner", "Comment"}
 	if verbose {
-		columns = append(columns, "Rows", "Size", "Comment")
+		columns = append(columns, "Rows", "Size", "Location", "Version", "Page Size")
 	}
 	res.SetColumns(columns)
 	res.SetScanValues(func(r md.Result) []interface{} {
 		f := r.(*md.Table)
-		v := []interface{}{f.Name, f.Type}
+		v := []interface{}{f.Name, f.Type, f.Created, f.Owner, f.Comment}
 		if verbose {
-			v = append(v, f.Rows, f.Size, f.Comment)
+			v = append(v, f.Rows, f.Size, f.Location, f.Version, f.PageSize)
 		}
 		return v
 	})

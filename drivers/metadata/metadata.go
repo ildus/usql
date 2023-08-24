@@ -271,13 +271,18 @@ func (t TableSet) Get() *Table {
 }
 
 type Table struct {
-	Catalog string
-	Schema  string
-	Name    string
-	Type    string
-	Rows    int64
-	Size    string
-	Comment string
+	Catalog  string
+	Schema   string
+	Name     string
+	Type     string
+	Rows     int64
+	Size     string
+	Comment  string
+	PageSize uint16
+	Owner    string
+	Created  string
+	Location string
+	Version  string
 }
 
 func (t Table) Values() []interface{} {
