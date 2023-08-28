@@ -52,7 +52,7 @@ When building `usql` out-of-the-box with `go build` or `go install`, only the
 
 ```sh
 # build/install with base drivers
-$ go install github.com/xo/usql@master
+$ go install github.com/xo/usql@latest
 ```
 
 Other databases can be enabled by specifying the [build tag for their database
