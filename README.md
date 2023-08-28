@@ -40,7 +40,7 @@ Install `usql` in the usual Go fashion:
 
 ```sh
 # install latest usql version with base drivers
-$ go install github.com/ildus/usql@latest
+$ go install github.com/ildus/usql@master
 ```
 
 See [below for information](#building) on `usql` build tags.

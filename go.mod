@@ -289,5 +289,3 @@ require (
 	modernc.org/token v1.1.0 // indirect
 	modernc.org/zappy v1.0.9 // indirect
 )
-
-replace github.com/ildus/ingres => /src/go/src/github.com/ildus/ingres
