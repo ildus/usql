@@ -11,8 +11,8 @@ import (
 	md "github.com/ildus/usql/drivers/metadata"
 
 	"context"
+	"fmt"
 	"io"
-        "fmt"
 )
 
 func init() {
@@ -37,12 +37,12 @@ func init() {
 			}
 			return out, nil
 		},
-		ChangePassword: func(db drivers.DB, user, new, old string) (error) {
+		ChangePassword: func(db drivers.DB, user, new, old string) error {
 			_, err := db.Exec(fmt.Sprintf(`ALTER USER %s WITH PASSWORD= '%s' `, user, new))
-                        if err != nil {
-                            return err
-                        }
-                        return nil
+			if err != nil {
+				return err
+			}
+			return nil
 		},
 	})
 }
